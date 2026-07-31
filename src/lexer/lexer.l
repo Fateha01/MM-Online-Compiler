@@ -1,5 +1,5 @@
 /* ============================================================
- * lexer.l -- Lexical Analyzer (Section 4.1 of the manual)
+ * lexer.l -- Lexical Analyzer 
  *
  * Recognizes: keywords, identifiers, int/float/bool literals,
  * operators, delimiters; discards whitespace and comments;
