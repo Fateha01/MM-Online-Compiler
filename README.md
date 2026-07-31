@@ -1,155 +1,107 @@
 # MM_compiler
 
-Compiler Construction Lab project. Front-end for a small imperative
-language — lexer, parser/AST, semantic analysis, three-address code gen.
-Language has int/float/bool, arithmetic/relational/logical exprs,
-if/if-else, while, print, nested block scoping. Built with Flex + Bison.
+Compiler construction lab project. Built 4 separate frontends (C, C++, Java, Python), each one goes through the full 6 phases:
 
-Repo folder is `MM_compiler`, binary is still `mc-compiler` (didn't bother
-renaming it everywhere in the Makefile etc, wasn't worth the risk this
-close to submission).
+1. Lexical Analysis (Flex)
+2. Syntax Analysis (Bison, builds AST)
+3. AST Construction (printed as indented tree)
+4. Symbol Table (name, type, line of declaration)
+5. Semantic Analysis (type checking, redeclaration/scope errors)
+6. Intermediate Code (Three-Address Code)
 
-Team: Fateha Jannat Sumaya, Id 231-115-215
+Each language has its own lexer/parser so it actually parses that language's real syntax (braces vs Python's indentation, `print` vs `cout <<` vs `System.out.println` vs `print()`). Phases 3-6 are basically the same core logic reused across all four — didn't see the point in rewriting AST/symbol-table/TAC logic 4 times when the language-specific part is really just phases 1-2.
 
-## Requirements
 
-Need flex, bison, gcc, make. gdb too if you're gonna use the debug config
-in VS Code.
+Name : Fateha Jannat Sumaya ID: 231-115-215
 
-**Linux / WSL:**
-```
-sudo apt update
-sudo apt install flex bison gcc make gdb
-```
-
-**Windows without WSL:** install MSYS2 (msys2.org, default install path is
-fine). Open the MSYS2 shortcut and run `pacman -Syu` — it'll probably
-close on you and ask you to run it again, just do that till it says
-nothing left to update. Then open the **UCRT64** shortcut (different one!)
-and run:
-```
-pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain flex bison
-```
-Check with `gcc --version` / `flex --version` / `bison --version` / `make --version`.
-
-VS Code is already set up to use UCRT64 automatically (see `.vscode/`), no
-PATH editing needed.
-
-## Build & run
+## Folder structure
 
 ```
-make
-./mc-compiler tests/valid_program.mc
+MM_compiler/
+├── c/          C frontend      -> mm_c
+├── cpp/        C++ frontend    -> mm_cpp
+├── java/       Java frontend   -> mm_java
+├── python/     Python frontend -> mm_python
+└── docs/
 ```
 
-`make` runs bison on `parser.y` → `parser.tab.c/h`, flex on `lexer.l` →
-`lex.yy.c`, compiles + links everything into `mc-compiler` (or
-`mc-compiler.exe` on Windows, Makefile figures out which).
-
-Running it prints parse status → semantic status → AST → TAC, in that
-order. Errors (lexical/syntax/semantic) get reported with a line number
-and it stops there — won't try to generate TAC if semantic analysis
-failed.
-
-`make test` runs every `.mc` file in `tests/` and you diff against the
-matching `.expected.txt`.
-
-`make clean` wipes the build dir + binary + generated flex/bison files
-(these aren't committed, see .gitignore).
-
-## VS Code
-
-Opening the folder gives you build/run/debug already wired up:
-- Ctrl+Shift+B = build
-- Run Task → "Run all tests" = make test
-- Run Task → "Run on current file"
-- Debug panel → "Debug mc-compiler (gdb)" — asks which .mc file to run,
-  defaults to valid_program.mc, set breakpoints in semantic.c/codegen.c
-  and step through it
-
-It'll probably prompt you to install the C/C++ extension on first open,
-say yes to that.
-
-On WSL open the folder from inside your Ubuntu terminal (`code .`), not
-from Windows explorer, or the toolchain won't be on PATH. On MSYS2 it
-should just work as long as it's installed at the default path — if you
-put it somewhere else you'll need to fix the msys64 path in
-`.vscode/settings.json` and `tasks.json`.
-
-fyi `lexer.l` includes `parser.tab.h` which doesn't exist till you build
-once, so you'll get a red squiggly there before the first `make`. normal,
-ignore it.
-
-I tested the Linux/WSL build properly — all test cases + valgrind + gdb,
-no leaks, no issues. Didn't have a Windows machine around to test the
-MSYS2 steps on so can't 100% promise those work, should be fine though
-since it's just the normal MSYS2 install process.
-
-## Demo (bonus GUI thing)
-
-Made a little GUI too, it's in `demo/`. one page, dropdown to pick a
-language. if you pick Mini Language it actually runs the real
-mc-compiler binary from src/, everything else in the dropdown (C, C++,
-Python, Java, JS) just calls the normal compilers for those, put it in
-there mostly cause it looked cooler with more options lol. only the Mini
-Language one actually matters for grading obviously.
-
-to run it:
-```
-cd demo/backend
-python3 server.py
-```
-or just double click run_demo.bat (windows) / run run_demo.sh, those
-build the compiler first then start the server for you. if you run
-server.py directly it skips the build step so make sure you ran `make`
-at least once already
-
-it's just a local server using python's stdlib, no installs needed,
-opens your browser on its own, works offline once python's there.
-needs python3 obviously (on msys2: `pacman -S mingw-w64-ucrt-x86_64-python`
-if you don't have it already). the other languages only show up if you
-actually have those compilers installed on your machine — not required,
-whole demo thing is optional anyway.
-
-## Structure
+Same layout inside each:
 
 ```
-project-root/
-├── .vscode/          # vs code stuff
-├── docs/report.md    # the writeup
+<lang>/
 ├── src/
 │   ├── lexer/lexer.l
 │   ├── parser/parser.y
-│   ├── ast/
-│   ├── semantic/
+│   ├── ast/ast.c, ast.h
 │   ├── symbol_table/
+│   ├── semantic/
 │   ├── codegen/
 │   └── main.c
-├── demo/             # bonus GUI, see below
-├── tests/            # .mc files + expected output
 ├── examples/
-├── Makefile
-└── README.md
+├── tests/
+└── Makefile
 ```
 
-## Implemented
+## Build & run
 
-Lexer handles keywords, identifiers, int/float/bool literals, all the
-required operators/delimiters, strips comments, reports bad characters as
-lexical errors with line numbers.
+```bash
+cd c && make
+cd cpp && make
+cd java && make
+cd python && make
+```
 
-Parser covers the full grammar (docs/report.md 3.3), builds the AST, has
-basic panic-mode recovery for syntax errors.
+Run:
 
-AST prints as an indented tree for every construct.
+```bash
+./c/mm_c c/examples/demo.mmc
+./cpp/mm_cpp cpp/examples/demo.mmcpp
+./java/mm_java java/examples/demo.mmjava
+./python/mm_python python/examples/demo.mmpy
+```
 
-Symbol table does nested/block scoping — tracks name, type, scope depth,
-declared line for everything, prints the full table once a program passes
-semantic analysis clean.
+Each run shows lex/parse status → AST → symbol table → semantic result → TAC. If semantic analysis fails it skips codegen and exits 1.
 
-Semantic analysis catches all 6 required categories: undeclared variable,
-redeclaration, scope violation, type mismatch, invalid assignment, invalid
-expressions. Each gets its own line-numbered error message.
+`make test` runs the demo, `make valgrind` runs it with `--leak-check=full`.
 
-TAC generation covers arithmetic (correct precedence), relational/logical
-expressions, if/if-else/while via labels and jumps, print.
+## Testing
+
+Ran all 4 frontends against their test suites (25 files total — valid programs, undeclared variable, type mismatch, redeclaration, syntax error, lexical error, plus one bad-indentation case for Python) under:
+
+```
+valgrind --leak-check=full --error-exitcode=99
+```
+
+Result: `TOTAL=25 FAILED=0`. No leaks, no invalid read/write, no double-free on any of it.
+
+## Syntax differences between the 4 languages
+
+| | C | C++ | Java | Python |
+|---|---|---|---|---|
+| Blocks | `{ }` | `{ }` | `{ }` (inside `class Main { public static void main(String[] args) { ... } }`) | indentation, `:` + INDENT/DEDENT |
+| Statement end | `;` | `;` | `;` | newline |
+| Print | `print expr;` | `cout << expr;` | `System.out.println(expr);` | `print(expr)` |
+| Declaration | `int x = 5;` | `int x = 5;` | `int x = 5;` | `x: int = 5` |
+| Booleans | `true`/`false` | `true`/`false` | `true`/`false` | `True`/`False` |
+| Logic ops | `&& \|\| !` | `&& \|\| !` | `&& \|\| !` | `and or not` |
+| Types | `int float bool string` | same | `int float boolean String` | `int float bool str` |
+
+All 4 support: declarations (with/without init), assignment, if/else, while, for, arithmetic, relational + logical ops, unary -/not, and one print statement.
+
+## Python indentation lexer (the annoying part)
+
+This was the one place where phase 1 wasn't trivial. Unlike the others, Python doesn't give you block boundaries as actual characters, so the lexer has to track an indent stack manually and synthesize INDENT/DEDENT/NEWLINE tokens itself (same basic idea CPython's own tokenizer uses).
+
+A few things I had to handle:
+- indentation comparisons only happen when a real token shows up next — otherwise blank lines / comment-only lines would mess up the stack
+- Flex only lets you `return` one token per rule, so I queue tokens in a small ring buffer and wrote a thin `yylex()` wrapper around the generated `raw_yylex()` to drain it
+- if a dedent doesn't match any level on the stack, it's a lexical error
+
+Took a few tries to get right, kept getting phantom DEDENT tokens at EOF before I fixed the buffer draining logic.
+
+## What's intentionally left out
+
+- No functions, arrays, or classes (except Java's mandatory Main wrapper) — lab scope is declarations + control flow + expressions, which is enough to hit all 6 phases
+- C++ only differs from C in the print statement here — a real C++ frontend would need templates, references, classes etc, way beyond this lab
+- Type coercion only does int → float, everything else is a semantic error
+- Python's `for i in range(a, b):` just gets lowered to a C-style `for(i=a; i<b; i=i+1)` in the AST, no actual iterator protocol
