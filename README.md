@@ -1,52 +1,216 @@
-# MM_compiler
+# MM_Compiler
 
-A 6-phase compiler front-end project with **four independent language frontends** —
-**C, C++, Java, and Python** — each implementing the full classical compiler pipeline:
+### Compiler Design Lab Project
 
+**Developed by:** Fateha Jannat Sumaya
+**Student ID:** 231-115-215
+
+---
+
+## About This Project
+
+During our Compiler Design course, we learned that every compiler processes a program through several phases before producing output. To understand these phases practically, I developed **MM_Compiler**.
+
+Instead of building only one compiler, I implemented **four different language frontends**:
+
+* C
+* C++
+* Java
+* Python
+
+Each frontend accepts the syntax of its own language while following the same compiler workflow internally.
+
+---
+
+## What This Compiler Can Do
+
+The compiler performs the following tasks one by one:
+
+* Reads the source program
+* Breaks the source code into tokens
+* Checks whether the program follows the grammar
+* Builds an Abstract Syntax Tree (AST)
+* Creates a Symbol Table
+* Detects semantic errors
+* Generates Three Address Code (TAC)
+
+---
+
+## Compiler Workflow
+
+```text
+Source Program
+      │
+      ▼
+Lexical Analysis
+      │
+      ▼
+Syntax Analysis
+      │
+      ▼
+Abstract Syntax Tree
+      │
+      ▼
+Symbol Table
+      │
+      ▼
+Semantic Analysis
+      │
+      ▼
+Three Address Code (TAC)
 ```
-Phase 1: Lexical Analysis   (Flex)
-Phase 2: Syntax Analysis    (Bison, builds the AST)
-Phase 3: AST Construction   (printed as an indented tree)
-Phase 4: Symbol Table       (name -> type, line of declaration)
-Phase 5: Semantic Analysis  (type checking, scope/redeclaration checks)
-Phase 6: Intermediate Code  (Three-Address Code / TAC generation)
+
+---
+
+## Folder Layout
+
+```text
+MM_compiler
+│
+├── c
+├── cpp
+├── java
+├── python
+└── docs
 ```
 
-Each language has its **own lexer and parser** written to accept that language's
-authentic surface syntax, so lexical analysis is genuinely different per language
-(braces vs. Python indentation, `print` vs `cout <<` vs `System.out.println` vs
-`print()`). Phases 3–6 (AST, symbol table, semantic analysis, TAC codegen) share
-one battle-tested implementation, copied into each language's directory so every
-frontend is a fully self-contained, independently buildable compiler — the same
-way real compilers share a common IR across different frontends.
+Inside every language folder:
 
-## Structure
-
-```
-MM_compiler/
-├── c/          C frontend       (mm_c)
-├── cpp/        C++ frontend     (mm_cpp)
-├── java/       Java frontend    (mm_java)
-├── python/     Python frontend  (mm_python)
-└── docs/       this file + notes
+```text
+src/
+├── lexer
+├── parser
+├── ast
+├── symbol_table
+├── semantic
+├── codegen
+└── main.c
 ```
 
-Each language folder is identical in structure:
+---
 
+## Language Differences
+
+Although all four compilers perform the same six phases, each language has its own syntax.
+
+For example:
+
+* C, C++, and Java use braces (`{}`) to define blocks.
+* Python uses indentation.
+* C++ prints using `cout <<`.
+* Java uses `System.out.println()`.
+* Python uses `print()`.
+
+Because of these differences, every frontend has its own lexer and parser.
+
+---
+
+# MM_Compiler
+
+### Compiler Design Lab Project
+
+**Developed by:** Fateha Jannat Sumaya
+**Student ID:** 231-115-215
+
+---
+
+## About This Project
+
+During our Compiler Design course, we learned that every compiler processes a program through several phases before producing output. To understand these phases practically, I developed **MM_Compiler**.
+
+Instead of building only one compiler, I implemented **four different language frontends**:
+
+* C
+* C++
+* Java
+* Python
+
+Each frontend accepts the syntax of its own language while following the same compiler workflow internally.
+
+---
+
+## What This Compiler Can Do
+
+The compiler performs the following tasks one by one:
+
+* Reads the source program
+* Breaks the source code into tokens
+* Checks whether the program follows the grammar
+* Builds an Abstract Syntax Tree (AST)
+* Creates a Symbol Table
+* Detects semantic errors
+* Generates Three Address Code (TAC)
+
+---
+
+## Compiler Workflow
+
+```text
+Source Program
+      │
+      ▼
+Lexical Analysis
+      │
+      ▼
+Syntax Analysis
+      │
+      ▼
+Abstract Syntax Tree
+      │
+      ▼
+Symbol Table
+      │
+      ▼
+Semantic Analysis
+      │
+      ▼
+Three Address Code (TAC)
 ```
-<lang>/
-├── src/
-│   ├── lexer/lexer.l         Phase 1 — Flex rules
-│   ├── parser/parser.y       Phase 2 — Bison grammar (builds AST)
-│   ├── ast/ast.c, ast.h      Phase 3 — AST node types + printer
-│   ├── symbol_table/         Phase 4 — symbol table
-│   ├── semantic/             Phase 5 — type checking
-│   ├── codegen/              Phase 6 — TAC generator
-│   └── main.c                 driver: runs all 6 phases in order
-├── examples/                  sample source programs
-├── tests/                     valid + error test cases
-└── Makefile
+
+---
+
+## Folder Layout
+
+```text
+MM_compiler
+│
+├── c
+├── cpp
+├── java
+├── python
+└── docs
 ```
+
+Inside every language folder:
+
+```text
+src/
+├── lexer
+├── parser
+├── ast
+├── symbol_table
+├── semantic
+├── codegen
+└── main.c
+```
+
+---
+
+## Language Differences
+
+Although all four compilers perform the same six phases, each language has its own syntax.
+
+For example:
+
+* C, C++, and Java use braces (`{}`) to define blocks.
+* Python uses indentation.
+* C++ prints using `cout <<`.
+* Java uses `System.out.println()`.
+* Python uses `print()`.
+
+Because of these differences, every frontend has its own lexer and parser.
+
+---
 
 ## Build & run
 
@@ -84,62 +248,113 @@ fails, code generation is skipped and the tool exits with status 1.
 `make test` runs the bundled demo. `make valgrind` runs it under Valgrind
 (`--leak-check=full`).
 
-## Verification
+## Error Checking
 
-All 4 frontends × their full test suites (25 test files total: valid programs,
-undeclared-variable, type-mismatch, redeclaration, syntax-error, lexical-error,
-and — for Python — an inconsistent-indentation case) were run under
-`valgrind --leak-check=full --error-exitcode=99` end-to-end:
+The compiler can detect several common programming errors, including:
 
-```
-TOTAL=25 FAILED=0
-```
+* Invalid tokens
+* Syntax errors
+* Undeclared variables
+* Variable redeclaration
+* Type mismatch
+* Invalid Python indentation
 
-Zero leaks, zero invalid reads/writes, zero double-frees across every language
-and every test case (valid and error paths alike).
+If a semantic error is found, TAC generation is skipped.
 
-## Per-language syntax notes
+---
 
-| | C | C++ | Java | Python |
-|---|---|---|---|---|
-| Block delimiters | `{ }` | `{ }` | `{ }` (wrapped in `class Main { public static void main(String[] args) { ... } }`) | indentation (`:` + INDENT/DEDENT) |
-| Statement terminator | `;` | `;` | `;` | newline |
-| Print | `print expr;` | `cout << expr;` | `System.out.println(expr);` | `print(expr)` |
-| Declaration | `int x = 5;` | `int x = 5;` | `int x = 5;` | `x: int = 5` (PEP 526 variable annotation) |
-| Boolean literals | `true` / `false` | `true` / `false` | `true` / `false` | `True` / `False` |
-| Logical ops | `&& \|\| !` | `&& \|\| !` | `&& \|\| !` | `and or not` |
-| Types | `int float bool string` | same | `int float boolean String` | `int float bool str` |
+## Python Frontend
 
-All four support: variable declarations (with optional initializer),
-assignment, `if`/`else`, `while`, `for`, arithmetic (`+ - * / %`), relational
-(`< > <= >= == !=`) and logical operators, unary `-`/`not`, and a single
-`print`-style output statement.
+Among the four frontends, Python required the most different lexer because Python uses indentation instead of braces.
 
-## Notable implementation detail: Python's indentation lexer
+The lexer keeps track of indentation levels and generates:
 
-Python is the only frontend where Phase 1 has to do real work beyond token
-matching: it tracks an indentation stack in `src/lexer/lexer.l` and manually
-synthesizes `INDENT`/`DEDENT`/`NEWLINE` tokens (there is no such thing at the
-character level — Python's own CPython tokenizer does the same). The
-implementation:
+* INDENT
+* DEDENT
+* NEWLINE
 
-- defers indentation comparison until the next *real* token is seen, so blank
-  lines and comment-only lines never affect the indent stack;
-- queues multiple tokens per Flex rule invocation (Flex can only `return` one
-  token per action) via a small ring buffer, drained by a thin `yylex()`
-  wrapper around the Flex-generated `raw_yylex()`;
-- reports a lexical error on inconsistent indentation (a dedent that doesn't
-  match any enclosing indentation level).
+This allows Python programs to be parsed correctly.
 
-## Known simplifications (by design, for a lab-scope subset)
+---
 
-- No functions/methods, arrays, or classes beyond Java's mandatory `Main`
-  wrapper — the subset targets declarations, control flow, and expressions,
-  which is enough to exercise all 6 phases meaningfully.
-- C++'s grammar differs from C's only in the print statement (`cout <<`) and
-  is otherwise the same subset; a production C++ frontend would additionally
-  handle templates, references, classes, etc., which is out of scope here.
-- Type coercion is limited to `int → float`; all other mismatches are
-  semantic errors.
-- Python's `for i in range(a, b):` is lowered directly to a C-style
-  `for(i=a; i<b; i=i+1)` in the AST — no real iterator protocol.
+## Current Scope
+
+This project focuses on the core concepts of compiler construction.
+
+Supported features include:
+
+* Variable declaration
+* Assignment
+* Arithmetic expressions
+* Relational expressions
+* Logical expressions
+* if-else
+* while loop
+* for loop
+* print statement
+
+The project does not include advanced language features such as functions, arrays, objects, templates, or exception handling.
+
+---
+
+## Final Remarks
+
+The main goal of this project was not to build a complete compiler, but to understand how different programming languages pass through the same compilation process.
+
+Working on separate frontends for C, C++, Java, and Python helped me compare their syntax while using a common compilation pipeline for AST construction, semantic analysis, symbol table generation, and intermediate code generation.
+
+
+## Error Checking
+
+The compiler can detect several common programming errors, including:
+
+* Invalid tokens
+* Syntax errors
+* Undeclared variables
+* Variable redeclaration
+* Type mismatch
+* Invalid Python indentation
+
+If a semantic error is found, TAC generation is skipped.
+
+---
+
+## Python Frontend
+
+Among the four frontends, Python required the most different lexer because Python uses indentation instead of braces.
+
+The lexer keeps track of indentation levels and generates:
+
+* INDENT
+* DEDENT
+* NEWLINE
+
+This allows Python programs to be parsed correctly.
+
+---
+
+## Current Scope
+
+This project focuses on the core concepts of compiler construction.
+
+Supported features include:
+
+* Variable declaration
+* Assignment
+* Arithmetic expressions
+* Relational expressions
+* Logical expressions
+* if-else
+* while loop
+* for loop
+* print statement
+
+The project does not include advanced language features such as functions, arrays, objects, templates, or exception handling.
+
+---
+
+## Final Remarks
+
+The main goal of this project was not to build a complete compiler, but to understand how different programming languages pass through the same compilation process.
+
+Working on separate frontends for C, C++, Java, and Python helped me compare their syntax while using a common compilation pipeline for AST construction, semantic analysis, symbol table generation, and intermediate code generation.
