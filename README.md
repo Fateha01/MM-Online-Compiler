@@ -230,11 +230,3 @@ project-root/
 - **TAC generation**: arithmetic (with correct precedence), relational/
   logical expressions, `if`/`if-else`/`while` via labels and jumps, `print`.
 
-## AI Usage Disclosure
-
-Per Section 10 of the project manual: this project's initial implementation
-was built with AI assistance (Claude). Every team member is still expected
-to read, understand, and be able to explain every part of it — see the
-"Individual Viva" note in the manual. Treat this codebase as a strong
-starting point, not a black box: read through `docs/report.md` and each
-`src/` module before presenting or being questioned on it.
