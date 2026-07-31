@@ -1,0 +1,316 @@
+#include "ast.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* ---------------------------------------------------------- helpers ---------------------------------------------------------- */
+
+static ASTNode *ast_alloc(NodeType type, int line) {
+    ASTNode *n = (ASTNode *)malloc(sizeof(ASTNode));
+    if (!n) { fprintf(stderr, "Fatal: out of memory while building AST\n"); exit(1); }
+    n->type = type;
+    n->line = line;
+    n->data_type = TYPE_UNKNOWN;
+    return n;
+}
+
+/* ---------------------------------------------------------- construction ---------------------------------------------------------- */
+
+ASTNode *ast_new_stmt_list(void) {
+    ASTNode *n = ast_alloc(NODE_STMT_LIST, 0);
+    n->data.stmt_list.capacity = 4;
+    n->data.stmt_list.count = 0;
+    n->data.stmt_list.stmts = (ASTNode **)malloc(sizeof(ASTNode *) * n->data.stmt_list.capacity);
+    return n;
+}
+
+ASTNode *ast_append_stmt(ASTNode *list, ASTNode *stmt) {
+    if (!stmt) return list; /* tolerate NULL from recovered errors */
+    if (list->data.stmt_list.count == list->data.stmt_list.capacity) {
+        list->data.stmt_list.capacity *= 2;
+        list->data.stmt_list.stmts = (ASTNode **)realloc(
+            list->data.stmt_list.stmts,
+            sizeof(ASTNode *) * list->data.stmt_list.capacity);
+    }
+    list->data.stmt_list.stmts[list->data.stmt_list.count++] = stmt;
+    return list;
+}
+
+ASTNode *ast_new_decl(DataType type, char *name, int line) {
+    ASTNode *n = ast_alloc(NODE_DECL, line);
+    n->data.decl.decl_type = type;
+    n->data.decl.name = name;
+    return n;
+}
+
+ASTNode *ast_new_assign(char *name, ASTNode *value, int line) {
+    ASTNode *n = ast_alloc(NODE_ASSIGN, line);
+    n->data.assign.name = name;
+    n->data.assign.value = value;
+    return n;
+}
+
+ASTNode *ast_new_if(ASTNode *cond, ASTNode *then_branch, ASTNode *else_branch, int line) {
+    ASTNode *n = ast_alloc(NODE_IF, line);
+    n->data.if_stmt.cond = cond;
+    n->data.if_stmt.then_branch = then_branch;
+    n->data.if_stmt.else_branch = else_branch;
+    return n;
+}
+
+ASTNode *ast_new_while(ASTNode *cond, ASTNode *body, int line) {
+    ASTNode *n = ast_alloc(NODE_WHILE, line);
+    n->data.while_stmt.cond = cond;
+    n->data.while_stmt.body = body;
+    return n;
+}
+
+ASTNode *ast_new_print(ASTNode *value, int line) {
+    ASTNode *n = ast_alloc(NODE_PRINT, line);
+    n->data.print_stmt.value = value;
+    return n;
+}
+
+ASTNode *ast_new_block(ASTNode *body) {
+    ASTNode *n = ast_alloc(NODE_BLOCK, body ? body->line : 0);
+    n->data.block.body = body;
+    return n;
+}
+
+ASTNode *ast_new_binop(OpType op, ASTNode *left, ASTNode *right, int line) {
+    ASTNode *n = ast_alloc(NODE_BINOP, line);
+    n->data.binop.op = op;
+    n->data.binop.left = left;
+    n->data.binop.right = right;
+    return n;
+}
+
+ASTNode *ast_new_unop(OpType op, ASTNode *operand, int line) {
+    ASTNode *n = ast_alloc(NODE_UNOP, line);
+    n->data.unop.op = op;
+    n->data.unop.operand = operand;
+    return n;
+}
+
+ASTNode *ast_new_ident(char *name, int line) {
+    ASTNode *n = ast_alloc(NODE_IDENT, line);
+    n->data.ident.name = name;
+    return n;
+}
+
+ASTNode *ast_new_int_literal(int value, int line) {
+    ASTNode *n = ast_alloc(NODE_INT_LITERAL, line);
+    n->data.int_literal.value = value;
+    n->data_type = TYPE_INT;
+    return n;
+}
+
+ASTNode *ast_new_float_literal(double value, int line) {
+    ASTNode *n = ast_alloc(NODE_FLOAT_LITERAL, line);
+    n->data.float_literal.value = value;
+    n->data_type = TYPE_FLOAT;
+    return n;
+}
+
+ASTNode *ast_new_bool_literal(int value, int line) {
+    ASTNode *n = ast_alloc(NODE_BOOL_LITERAL, line);
+    n->data.bool_literal.value = value;
+    n->data_type = TYPE_BOOL;
+    return n;
+}
+
+/* ---------------------------------------------------------- utility strings ---------------------------------------------------------- */
+
+const char *datatype_to_string(DataType t) {
+    switch (t) {
+        case TYPE_INT:   return "int";
+        case TYPE_FLOAT: return "float";
+        case TYPE_BOOL:  return "bool";
+        default:         return "unknown";
+    }
+}
+
+char *format_float(double value, char *buf, int buf_size) {
+    snprintf(buf, buf_size, "%g", value);
+    if (!strchr(buf, '.') && !strchr(buf, 'e') && !strchr(buf, 'E')
+        && !strchr(buf, 'n') /* nan/inf */) {
+        size_t len = strlen(buf);
+        if (len + 2 < (size_t)buf_size) {
+            buf[len] = '.'; buf[len + 1] = '0'; buf[len + 2] = '\0';
+        }
+    }
+    return buf;
+}
+
+const char *optype_to_string(OpType op) {
+    switch (op) {
+        case OP_ADD: return "+";
+        case OP_SUB: return "-";
+        case OP_MUL: return "*";
+        case OP_DIV: return "/";
+        case OP_MOD: return "%";
+        case OP_LT:  return "<";
+        case OP_GT:  return ">";
+        case OP_LE:  return "<=";
+        case OP_GE:  return ">=";
+        case OP_EQ:  return "==";
+        case OP_NE:  return "!=";
+        case OP_AND: return "&&";
+        case OP_OR:  return "||";
+        case OP_NOT: return "!";
+        case OP_NEG: return "-";
+        default:     return "?";
+    }
+}
+
+/* ---------------------------------------------------------- printing ---------------------------------------------------------- */
+
+static void indent_print(int indent) {
+    for (int i = 0; i < indent; i++) printf("  ");
+}
+
+void ast_print(const ASTNode *node, int indent) {
+    if (!node) { indent_print(indent); printf("(null)\n"); return; }
+
+    switch (node->type) {
+        case NODE_STMT_LIST:
+            for (int i = 0; i < node->data.stmt_list.count; i++)
+                ast_print(node->data.stmt_list.stmts[i], indent);
+            break;
+
+        case NODE_DECL:
+            indent_print(indent);
+            printf("Decl (line %d): %s %s\n", node->line,
+                   datatype_to_string(node->data.decl.decl_type), node->data.decl.name);
+            break;
+
+        case NODE_ASSIGN:
+            indent_print(indent);
+            printf("Assign (line %d): %s =\n", node->line, node->data.assign.name);
+            ast_print(node->data.assign.value, indent + 1);
+            break;
+
+        case NODE_IF:
+            indent_print(indent);
+            printf("If (line %d)\n", node->line);
+            indent_print(indent + 1); printf("Cond:\n");
+            ast_print(node->data.if_stmt.cond, indent + 2);
+            indent_print(indent + 1); printf("Then:\n");
+            ast_print(node->data.if_stmt.then_branch, indent + 2);
+            if (node->data.if_stmt.else_branch) {
+                indent_print(indent + 1); printf("Else:\n");
+                ast_print(node->data.if_stmt.else_branch, indent + 2);
+            }
+            break;
+
+        case NODE_WHILE:
+            indent_print(indent);
+            printf("While (line %d)\n", node->line);
+            indent_print(indent + 1); printf("Cond:\n");
+            ast_print(node->data.while_stmt.cond, indent + 2);
+            indent_print(indent + 1); printf("Body:\n");
+            ast_print(node->data.while_stmt.body, indent + 2);
+            break;
+
+        case NODE_PRINT:
+            indent_print(indent);
+            printf("Print (line %d):\n", node->line);
+            ast_print(node->data.print_stmt.value, indent + 1);
+            break;
+
+        case NODE_BLOCK:
+            indent_print(indent);
+            printf("Block:\n");
+            ast_print(node->data.block.body, indent + 1);
+            break;
+
+        case NODE_BINOP:
+            indent_print(indent);
+            printf("BinOp '%s' (line %d) : %s\n", optype_to_string(node->data.binop.op),
+                   node->line, datatype_to_string(node->data_type));
+            ast_print(node->data.binop.left, indent + 1);
+            ast_print(node->data.binop.right, indent + 1);
+            break;
+
+        case NODE_UNOP:
+            indent_print(indent);
+            printf("UnOp '%s' (line %d) : %s\n", optype_to_string(node->data.unop.op),
+                   node->line, datatype_to_string(node->data_type));
+            ast_print(node->data.unop.operand, indent + 1);
+            break;
+
+        case NODE_IDENT:
+            indent_print(indent);
+            printf("Ident: %s (line %d) : %s\n", node->data.ident.name, node->line,
+                   datatype_to_string(node->data_type));
+            break;
+
+        case NODE_INT_LITERAL:
+            indent_print(indent);
+            printf("IntLiteral: %d (line %d)\n", node->data.int_literal.value, node->line);
+            break;
+
+        case NODE_FLOAT_LITERAL: {
+            char fbuf[32];
+            indent_print(indent);
+            printf("FloatLiteral: %s (line %d)\n",
+                   format_float(node->data.float_literal.value, fbuf, sizeof(fbuf)), node->line);
+            break;
+        }
+
+        case NODE_BOOL_LITERAL:
+            indent_print(indent);
+            printf("BoolLiteral: %s (line %d)\n",
+                   node->data.bool_literal.value ? "true" : "false", node->line);
+            break;
+    }
+}
+
+/* ---------------------------------------------------------- freeing ---------------------------------------------------------- */
+
+void ast_free(ASTNode *node) {
+    if (!node) return;
+
+    switch (node->type) {
+        case NODE_STMT_LIST:
+            for (int i = 0; i < node->data.stmt_list.count; i++)
+                ast_free(node->data.stmt_list.stmts[i]);
+            free(node->data.stmt_list.stmts);
+            break;
+        case NODE_DECL:
+            free(node->data.decl.name);
+            break;
+        case NODE_ASSIGN:
+            free(node->data.assign.name);
+            ast_free(node->data.assign.value);
+            break;
+        case NODE_IF:
+            ast_free(node->data.if_stmt.cond);
+            ast_free(node->data.if_stmt.then_branch);
+            ast_free(node->data.if_stmt.else_branch);
+            break;
+        case NODE_WHILE:
+            ast_free(node->data.while_stmt.cond);
+            ast_free(node->data.while_stmt.body);
+            break;
+        case NODE_PRINT:
+            ast_free(node->data.print_stmt.value);
+            break;
+        case NODE_BLOCK:
+            ast_free(node->data.block.body);
+            break;
+        case NODE_BINOP:
+            ast_free(node->data.binop.left);
+            ast_free(node->data.binop.right);
+            break;
+        case NODE_UNOP:
+            ast_free(node->data.unop.operand);
+            break;
+        case NODE_IDENT:
+            free(node->data.ident.name);
+            break;
+        default:
+            break; /* literals own no heap memory besides the node itself */
+    }
+    free(node);
+}
