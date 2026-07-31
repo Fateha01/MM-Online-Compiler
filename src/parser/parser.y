@@ -1,5 +1,5 @@
 /* ============================================================
- * parser.y -- Syntax Analyzer (Section 4.2) + AST construction
+ * parser.y -- Syntax Analyzer  + AST construction
  *
  * Implements the CFG for the language defined in Section 5 of
  * the manual. Operator precedence/associativity is declared
