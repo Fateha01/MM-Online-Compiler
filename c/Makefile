@@ -11,10 +11,12 @@ AST = $(SRC_DIR)/ast
 SYM = $(SRC_DIR)/symbol_table
 SEM = $(SRC_DIR)/semantic
 GEN = $(SRC_DIR)/codegen
+OPT = $(SRC_DIR)/optimizer
+TGT = $(SRC_DIR)/targetcode
 LEX = $(SRC_DIR)/lexer
 PAR = $(SRC_DIR)/parser
 
-INCLUDES = -I$(AST) -I$(SYM) -I$(SEM) -I$(GEN) -I$(BUILD_DIR)
+INCLUDES = -I$(AST) -I$(SYM) -I$(SEM) -I$(GEN) -I$(OPT) -I$(TGT) -I$(BUILD_DIR)
 
 .PHONY: all clean test valgrind
 
@@ -30,6 +32,7 @@ $(BUILD_DIR)/lexer.yy.c: $(LEX)/lexer.l $(BUILD_DIR)/parser.tab.h | $(BUILD_DIR)
 	$(FLEX) -o $(BUILD_DIR)/lexer.yy.c $(LEX)/lexer.l
 
 $(BIN): $(AST)/ast.c $(SYM)/symbol_table.c $(SEM)/semantic.c $(GEN)/codegen.c \
+        $(OPT)/optimizer.c $(TGT)/targetcode.c \
         $(BUILD_DIR)/parser.tab.c $(BUILD_DIR)/lexer.yy.c $(SRC_DIR)/main.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $(BIN) $^
 
