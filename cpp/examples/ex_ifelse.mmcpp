@@ -1,0 +1,6 @@
+int age = 20;
+if (age >= 18) {
+    cout << 1;
+} else {
+    cout << 0;
+}
