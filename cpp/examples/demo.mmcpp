@@ -1,0 +1,16 @@
+int x = 5;
+float y = 2.5;
+bool flag = true;
+int sum = 0;
+for (int i = 0; i < x; i = i + 1) {
+    sum = sum + i;
+}
+if (sum > 10 && flag) {
+    cout << sum;
+} else {
+    cout << 0;
+}
+while (x > 0) {
+    x = x - 1;
+    cout << x;
+}
