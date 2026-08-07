@@ -1,0 +1,7 @@
+*.exe
+*.o
+*/build/
+mm_c
+mm_cpp
+mm_java
+mm_python
