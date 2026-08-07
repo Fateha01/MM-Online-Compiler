@@ -1,6 +1,6 @@
 # MM_compiler
 
-# Name : Fateha Jannat Sumaya
+# Name : Fateha Jannat Sumaya 
 # ID : 231-115-215
 
 A compiler front-end I built for my Compiler Construction lab. It has four
@@ -69,12 +69,36 @@ mingw32-make
 ## Run
 
 ```bash
-./mm_c      examples/ex_ifelse.mmc
-./mm_cpp    examples/demo.mmcpp
-./mm_java   examples/ex_while.mmjava
-./mm_python examples/ex_for.mmpy
-```
+cd c
+./mm_c examples/demo.mmc
+./mm_c examples/ex_expr.mmc
+./mm_c examples/ex_for.mmc
+./mm_c examples/ex_ifelse.mmc
+./mm_c examples/ex_while.mmc
 
+cd cpp
+./mm_cpp examples/demo.mmcpp
+./mm_cpp examples/ex_expr.mmcpp
+./mm_cpp examples/ex_for.mmcpp
+./mm_cpp examples/ex_ifelse.mmcpp
+./mm_cpp examples/ex_while.mmcpp
+
+cd java
+./mm_java examples/demo.mmjava
+./mm_java examples/ex_expr.mmjava
+./mm_java examples/ex_for.mmjava
+./mm_java examples/ex_ifelse.mmjava
+./mm_java examples/ex_while.mmjava
+
+
+cd python
+./mm_python examples/demo.mmpy
+./mm_python examples/comments_blank_lines.mmpy
+./mm_python examples/ex_expr.mmpy
+./mm_python examples/ex_for.mmpy
+./mm_python examples/ex_ifelse.mmpy
+./mm_python examples/ex_while.mmpy
+```
 Each run shows all six phases in order: token stream, parse tree (AST),
 symbol table + semantic result, TAC, optimized TAC, then target code. If
 semantic analysis fails, codegen is skipped and it exits with status 1.
