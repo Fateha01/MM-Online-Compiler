@@ -1,0 +1,12 @@
+# top comment
+x: int = 5
+
+# blank line above, comment here too
+if x > 0:
+    # inside if
+    print(x)
+
+else:
+    print(0)
+
+y: int = 1

@@ -1,0 +1,13 @@
+x: int = 5
+y: float = 2.5
+flag: bool = True
+sum: int = 0
+for i in range(0, x):
+    sum = sum + i
+if sum > 10 and flag:
+    print(sum)
+else:
+    print(0)
+while x > 0:
+    x = x - 1
+    print(x)

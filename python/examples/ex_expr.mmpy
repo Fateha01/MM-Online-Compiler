@@ -1,0 +1,4 @@
+a: int = 4
+b: int = 3
+result: int = (a + b) * (a - b) + 2
+print(result)
