@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "web/client/**", "use": "@vercel/static" },
+    {
+      "src": "web/server/server.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "web/bin/mm_c",
+          "web/bin/mm_cpp",
+          "web/bin/mm_java",
+          "web/bin/mm_python",
+          "c/examples/**",
+          "cpp/examples/**",
+          "java/examples/**",
+          "python/examples/**"
+        ]
+      }
+    }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "web/server/server.js" },
+    { "src": "/$", "dest": "web/client/index.html" },
+    { "src": "/(.*)", "dest": "web/client/$1" }
+  ]
+}
