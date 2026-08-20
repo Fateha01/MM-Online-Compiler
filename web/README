@@ -1,0 +1,58 @@
+# MM_compiler — Web Frontend
+
+# Fateha Jannat Sumaya
+# ID: 231-115-215
+
+
+Paste source code in the browser, hit **COMPILE**, and watch it run through
+all 6 backend phases (Lexical → Syntax → Semantic → IR → Optimization →
+Target Code) live. Supports all 4 language frontends: C, C++, Java, Python.
+
+```
+web/
+├── server/     Express backend — spawns the compiled mm_c / mm_cpp / mm_java / mm_python
+│               binaries on your submitted source and parses their output into phases.
+└── client/     Static frontend — a blueprint/schematic-styled "compilation bench" UI.
+                Served automatically by the backend, no build step needed.
+```
+
+## 1. Build the compiler binaries first (if not already built)
+
+```bash
+cd ../c && make
+cd ../cpp && make
+cd ../java && make
+cd ../python && make
+```
+
+## 2. Install & run the web backend
+
+```bash
+cd web/server
+npm install
+npm start
+```
+
+Open **http://localhost:4000** — the backend serves the frontend directly.
+
+- Pick a language (C / C++ / Java / Python)
+- Write code or load a bundled example (`../<lang>/examples/*`)
+- Click **COMPILE** — the **OUTPUT** console shows the program's actual
+  printed result (or the compiler error if it failed), like a normal
+  compiler run. All 6 phases still run in the backend and are available
+  under "Show 6-phase compiler internals" if you want to inspect tokens /
+  parse tree / TAC / target code.
+
+## Notes
+
+- Runs each submission through the real Flex/Bison binary (5s timeout, 20k
+  char limit). No sandboxing needed — these are toy-language analyzers that
+  only print phase output, they don't execute or link real code.
+- `server/tacInterpreter.js` is a small interpreter that actually executes
+  the optimized three-address code (phase 5) so the OUTPUT console shows
+  real computed values (e.g. an actual `10` for a summed loop), not just
+  the TAC/assembly text.
+- Config lives at the top of `server/server.js` (`LANGS`, `PORT`,
+  `RUN_TIMEOUT_MS`, `MAX_SOURCE_CHARS`).
+- To serve client separately from backend, set `const API = "http://localhost:4000"`
+  at the top of `client/app.js`.
