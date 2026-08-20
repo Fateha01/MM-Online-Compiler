@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MM_COMPILER — Compilation Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="sheet">
+
+  <!-- ===== Title block ===== -->
+  <header class="titleblock">
+    <div class="titleblock__mark">
+      <svg class="titleblock__glyph" viewBox="0 0 40 40" aria-hidden="true">
+        <rect x="2" y="2" width="36" height="36" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M11 14 L11 26 M11 14 H16 M11 20 H15 M11 26 H16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="square"/>
+        <path d="M22 14 L27 26 L32 14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="square" stroke-linejoin="miter"/>
+      </svg>
+      <div>
+        <h1>MM_COMPILER</h1>
+        <p>six-phase compilation bench &mdash; C / C++ / Java / Python frontends</p>
+      </div>
+    </div>
+    <div class="titleblock__stamp">
+      <div class="stampfield">
+        <span class="stampfield__label">LANG</span>
+        <span class="stampfield__value" id="metaLang">C</span>
+      </div>
+      <div class="stampfield">
+        <span class="stampfield__label">STATUS</span>
+        <span class="stampfield__value" id="metaStatus">STANDBY</span>
+      </div>
+      <div class="stampfield">
+        <span class="stampfield__label">EXIT</span>
+        <span class="stampfield__value" id="metaExit">&mdash;</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Work area ===== -->
+  <main class="bench">
+
+    <!-- Left: input station -->
+    <section class="station-input">
+      <div class="langrow" id="langSwitch" role="tablist" aria-label="Source language">
+        <button class="langbtn" data-lang="c">C</button>
+        <button class="langbtn" data-lang="cpp">C++</button>
+        <button class="langbtn" data-lang="java">JAVA</button>
+        <button class="langbtn" data-lang="python">PYTHON</button>
+      </div>
+
+      <div class="editorwrap">
+        <div class="editorwrap__bar">
+          <span id="fileLabel">source.mmc</span>
+          <select id="exampleSelect" aria-label="Load example">
+            <option value="">load example&hellip;</option>
+          </select>
+        </div>
+        <div class="editor">
+          <div class="editor__gutter" id="gutter">1</div>
+          <textarea id="code" spellcheck="false" autocomplete="off" wrap="off"></textarea>
+        </div>
+      </div>
+
+      <button class="stampbtn" id="compileBtn">
+        <span>COMPILE</span><span class="stampbtn__tri">&#9656;</span>
+      </button>
+      <p class="hint" id="errorBanner" hidden></p>
+    </section>
+
+    <!-- Right: run console -->
+    <section class="station-output">
+      <div class="console">
+        <div class="console__bar">
+          <span>OUTPUT</span>
+          <span class="console__exit" id="consoleExit">not run yet</span>
+        </div>
+        <pre class="console__body" id="consoleBody">// click COMPILE to run source.mmc through the pipeline</pre>
+      </div>
+
+      <details class="internals" id="internalsBlock">
+        <summary>Show 6-phase compiler internals</summary>
+        <ol class="phaselist" id="phaseList">
+          <!-- phase nodes injected by app.js -->
+          <div class="tracepulse" id="tracePulse" aria-hidden="true"></div>
+        </ol>
+      </details>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <span>MM_compiler &mdash; Flex/Bison, 6-phase pipeline &middot; web bench v2</span>
+  </footer>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
