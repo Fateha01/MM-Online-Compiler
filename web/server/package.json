@@ -1,0 +1,13 @@
+{
+  "name": "mm-compiler-web-server",
+  "version": "1.0.0",
+  "description": "Backend for MM_compiler web UI - runs the compiled language frontends and returns 6-phase output.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}
